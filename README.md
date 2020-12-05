@@ -1,5 +1,5 @@
 # small-business-manager
-A generalised project that allows small businesses like home bakers or home hairdressers to create price lists and packages. Input orders and track minimum finances. View analytics on their order history so they can make informed decisions / projections based on their selling trends.
+A business-generic project that allows small businesses like home bakers or home hairdressers to create price lists and packages. Input orders and track minimum finances. View analytics on their order history so they can make informed decisions / projections based on their selling trends.
 
 # Aims:
 Proof of concept: provide a small standalone app that can be installed on a deskptop / laptop to allow individuals - or a few people - to track their small business events. A dashboard on entry will show an overall view of the small business activity. Facilities to manage both orders and items for sale will be provided through a minimal, intuitive interface.
@@ -49,9 +49,6 @@ If this takes off and people start using it, I may look to building it out furth
   - Automated messages to the business users when order dates are approaching (may add to PoC)
   ? Order Archived: temporarily archive an order with the understanding that it will be deleted within a certain time limit. Means that if client changes mind, they can             reactivate and the order won't have to be filled out again - can only be reactivated a certain number of times.*
   
-  
-  
-  
-  
-* Haven't decided on whether or not I want to add these features yet.
-** I believe this will become more clear through user feedback on what they actually want displayed. Might look at giving the user control over that as well i.e turn on / off      panels and allowing them to choose what's most useful for them to know up front.
+    
+###### * Haven't decided on whether or not I want to add these features yet.
+###### ** I believe this will become more clear through user feedback on what they actually want displayed. Might look at giving the user control over that as well i.e turn on / off      panels and allowing them to choose what's most useful for them to know up front.
