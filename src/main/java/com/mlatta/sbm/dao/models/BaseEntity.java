@@ -12,6 +12,8 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.NaturalId;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -38,6 +40,7 @@ public class BaseEntity implements Serializable {
 	private Timestamp updatedDate;
 
 	@Version
+	@JsonIgnore
 	private Long version;
 
 	@Override
