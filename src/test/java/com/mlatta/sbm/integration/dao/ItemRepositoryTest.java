@@ -1,4 +1,4 @@
-package com.mlatta.sbm.unit.dao.items;
+package com.mlatta.sbm.integration.dao;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
