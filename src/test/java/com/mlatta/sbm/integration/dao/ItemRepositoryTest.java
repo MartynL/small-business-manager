@@ -30,7 +30,6 @@ class ItemRepositoryTest {
 		assertThat(savedItem.getCreatedDateTime(), notNullValue());
 		assertThat(savedItem.getVersion(), notNullValue());
 		assertThat(savedItem.getUpdatedDateTime(), nullValue());
-		assertThat(savedItem.getUniqueRef(), notNullValue());
 		assertThat(savedItem.getName(), is(item.getName()));
 		assertThat(savedItem.getPrice(), is(item.getPrice()));
 	}
@@ -47,7 +46,6 @@ class ItemRepositoryTest {
 		Item updateItem = itemRepository.saveAndFlush(savedItem);
 		
 		assertThat(updateItem.getId(), equalTo(savedItem.getId()));
-		assertThat(updateItem.getUniqueRef(), equalTo(savedItem.getUniqueRef()));
 		assertThat(updateItem.getName(), equalTo("Test update item"));
 		assertThat(updateItem.getCreatedDateTime(), equalTo(savedItem.getCreatedDateTime()));
 		assertThat(updateItem.getUpdatedDateTime(), is(not(updateItem.getCreatedDateTime())));

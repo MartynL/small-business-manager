@@ -5,8 +5,12 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EntityNotFoundException;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 
@@ -15,29 +19,52 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Entity
 @Getter
 @Setter
+@Entity
+@Table(name = "package")
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "sale_item")
-public class Item extends BaseEntity {
-
-	private static final long serialVersionUID = 6097750957253649716L;
-
+public class SalePackage extends BaseEntity {
+	
+	private static final long serialVersionUID = -8176631356390440181L;
+	
+	
 	@Column(name = "name", length = 255)
 	private String name;
 	
 	@Column(name = "price", scale = 2)
 	private BigDecimal price;
+
+	@ManyToMany(cascade = {
+		CascadeType.PERSIST,
+		CascadeType.MERGE
+	})
+	@JoinTable(
+		name = "package_item", 
+		joinColumns = @JoinColumn(name = "package_id"), 
+		inverseJoinColumns = @JoinColumn(name = "item_id"))
+	private Set<Item> packageItems = new HashSet<>();
 	
-	@ManyToMany(mappedBy = "packageItems")
-	private Set<SalePackage> packages = new HashSet<>();
-	
-	public Item(String name, Double price) {
+	public SalePackage(String name, Double price, Set<Item> items) {
 		super();
 		this.name = name;
 		this.price = BigDecimal.valueOf(price);
+		items.stream().forEach(this::addItem);
+	}
+	
+	public void addItem(Item item) {
+		this.packageItems.add(item);
+		item.getPackages().add(this);
+	}
+	
+	public void removeItem(Item item) {
+		if(this.packageItems.contains(item)) {
+			this.packageItems.remove(item);
+			item.getPackages().remove(this);
+		} else {
+			throw new EntityNotFoundException("Item is not found in this package");
+		}
 	}
 
 	@Override
@@ -56,8 +83,10 @@ public class Item extends BaseEntity {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		Item other = (Item) obj;
+		SalePackage other = (SalePackage) obj;
 		return Objects.equals(name, other.name) && Objects.equals(price, other.price);
 	}
 	
+	
+
 }

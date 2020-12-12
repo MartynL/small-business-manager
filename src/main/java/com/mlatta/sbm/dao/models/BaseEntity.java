@@ -6,18 +6,17 @@ import java.util.Objects;
 import java.util.UUID;
 
 import javax.persistence.Column;
+import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
 import javax.persistence.Version;
 
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.NaturalId;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -25,14 +24,13 @@ import lombok.Setter;
 @Getter @Setter
 @MappedSuperclass
 @NoArgsConstructor
-@AllArgsConstructor
 public abstract class BaseEntity implements Serializable {
 
-	private static final long serialVersionUID = 6965767719265988245L;
-
-	@NaturalId
+	protected static final long serialVersionUID = 5311444541130492576L;
+	
+	@Id
 	@Column(columnDefinition = "binary(16)", updatable = false, nullable = false, unique = true)
-	private UUID uniqueRef; 
+	protected UUID id = UUID.randomUUID(); 
 
 	@CreationTimestamp
 	@Column(name = "created_on", updatable = false)
@@ -48,7 +46,6 @@ public abstract class BaseEntity implements Serializable {
 	
 	@PrePersist
 	private void beforePersist() {
-		this.uniqueRef = UUID.randomUUID();
 		this.createdDateTime = OffsetDateTime.now();
 	}
 	
@@ -56,10 +53,10 @@ public abstract class BaseEntity implements Serializable {
 	private void beforeUpdate() {
 		this.updatedDateTime = OffsetDateTime.now();
 	}
-
+	
 	@Override
 	public int hashCode() {
-		return Objects.hash(createdDateTime, uniqueRef, updatedDateTime, version);
+		return Objects.hash(id);
 	}
 
 	@Override
@@ -71,13 +68,12 @@ public abstract class BaseEntity implements Serializable {
 		if (getClass() != obj.getClass())
 			return false;
 		BaseEntity other = (BaseEntity) obj;
-		return Objects.equals(createdDateTime, other.createdDateTime) && Objects.equals(uniqueRef, other.uniqueRef)
-				&& Objects.equals(updatedDateTime, other.updatedDateTime) && Objects.equals(version, other.version);
+		return Objects.equals(id, other.id);
 	}
 
 	@Override
 	public String toString() {
-		return "BaseEntity [uniqueRef=" + uniqueRef + ", createdDateTime=" + createdDateTime + ", updatedDateTime="
+		return "BaseEntity [uniqueRef=" + id + ", createdDateTime=" + createdDateTime + ", updatedDateTime="
 				+ updatedDateTime + ", version=" + version + "]";
 	}
 	
