@@ -6,6 +6,8 @@ import java.util.Objects;
 import java.util.UUID;
 
 import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.PrePersist;
@@ -13,6 +15,7 @@ import javax.persistence.PreUpdate;
 import javax.persistence.Version;
 
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.NaturalId;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -29,8 +32,12 @@ public abstract class BaseEntity implements Serializable {
 	protected static final long serialVersionUID = 5311444541130492576L;
 	
 	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	protected Long id;
+	
+	@NaturalId
 	@Column(columnDefinition = "binary(16)", updatable = false, nullable = false, unique = true)
-	protected UUID id = UUID.randomUUID(); 
+	protected UUID uniqueRef = UUID.randomUUID(); 
 
 	@CreationTimestamp
 	@Column(name = "created_on", updatable = false)
@@ -56,25 +63,29 @@ public abstract class BaseEntity implements Serializable {
 	
 	@Override
 	public int hashCode() {
-		return Objects.hash(id);
+		return Objects.hash(createdDateTime, id, uniqueRef, updatedDateTime, version);
 	}
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
+		if (this == obj) {
 			return true;
-		if (obj == null)
+		}
+		if (!(obj instanceof BaseEntity)) {
 			return false;
-		if (getClass() != obj.getClass())
-			return false;
+		}
 		BaseEntity other = (BaseEntity) obj;
-		return Objects.equals(id, other.id);
+		return Objects.equals(createdDateTime, other.createdDateTime) 
+				&& Objects.equals(id, other.id)
+				&& Objects.equals(uniqueRef, other.uniqueRef) 
+				&& Objects.equals(updatedDateTime, other.updatedDateTime)
+				&& version == other.version;
 	}
 
 	@Override
 	public String toString() {
-		return "BaseEntity [uniqueRef=" + id + ", createdDateTime=" + createdDateTime + ", updatedDateTime="
-				+ updatedDateTime + ", version=" + version + "]";
+		return "BaseEntity [id=" + id + ", uniqueRef=" + uniqueRef + ", createdDateTime=" + createdDateTime
+				+ ", updatedDateTime=" + updatedDateTime + ", version=" + version + "]";
 	}
 	
 }

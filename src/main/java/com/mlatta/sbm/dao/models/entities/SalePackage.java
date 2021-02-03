@@ -1,4 +1,4 @@
-package com.mlatta.sbm.dao.models;
+package com.mlatta.sbm.dao.models.entities;
 
 import java.math.BigDecimal;
 import java.util.HashSet;
@@ -6,13 +6,12 @@ import java.util.Objects;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
-import javax.persistence.Column;
+import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.EntityNotFoundException;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
-import javax.persistence.Table;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -22,20 +21,13 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(name = "package")
 @NoArgsConstructor
 @AllArgsConstructor
-public class SalePackage extends BaseEntity {
+@DiscriminatorValue("package")
+public class SalePackage extends Item {
 	
 	private static final long serialVersionUID = -8176631356390440181L;
 	
-	
-	@Column(name = "name", length = 255)
-	private String name;
-	
-	@Column(name = "price", scale = 2)
-	private BigDecimal price;
-
 	@ManyToMany(cascade = {
 		CascadeType.PERSIST,
 		CascadeType.MERGE
@@ -44,21 +36,27 @@ public class SalePackage extends BaseEntity {
 		name = "package_item", 
 		joinColumns = @JoinColumn(name = "package_id"), 
 		inverseJoinColumns = @JoinColumn(name = "item_id"))
-	private Set<Item> packageItems = new HashSet<>();
+	private Set<SaleItem> packageItems = new HashSet<>();
 	
-	public SalePackage(String name, Double price, Set<Item> items) {
+	public SalePackage(String name, Double price, Set<SaleItem> items) {
 		super();
-		this.name = name;
-		this.price = BigDecimal.valueOf(price);
+		super.setName(name);
+		super.setPrice(BigDecimal.valueOf(price));
 		items.stream().forEach(this::addItem);
 	}
 	
-	public void addItem(Item item) {
+	public SalePackage(String name, Double price) {
+		super();
+		super.setName(name);
+		super.setPrice(BigDecimal.valueOf(price));
+	}
+	
+	public void addItem(SaleItem item) {
 		this.packageItems.add(item);
 		item.getPackages().add(this);
 	}
 	
-	public void removeItem(Item item) {
+	public void removeItem(SaleItem item) {
 		if(this.packageItems.contains(item)) {
 			this.packageItems.remove(item);
 			item.getPackages().remove(this);
@@ -69,10 +67,7 @@ public class SalePackage extends BaseEntity {
 
 	@Override
 	public int hashCode() {
-		final int prime = 31;
-		int result = super.hashCode();
-		result = prime * result + Objects.hash(name, price);
-		return result;
+		return Objects.hash(super.id, super.uniqueRef);
 	}
 
 	@Override
@@ -84,9 +79,8 @@ public class SalePackage extends BaseEntity {
 		if (getClass() != obj.getClass())
 			return false;
 		SalePackage other = (SalePackage) obj;
-		return Objects.equals(name, other.name) && Objects.equals(price, other.price);
+		return Objects.equals(super.id, other.id) 
+				&& Objects.equals(super.uniqueRef, other.uniqueRef);
 	}
-	
-	
 
 }

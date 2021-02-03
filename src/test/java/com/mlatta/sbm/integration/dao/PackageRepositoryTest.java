@@ -10,45 +10,47 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.annotation.Import;
 
-import com.mlatta.sbm.TestDataUtil;
-import com.mlatta.sbm.dao.models.Item;
-import com.mlatta.sbm.dao.models.SalePackage;
+import com.mlatta.sbm.TestDataManager;
+import com.mlatta.sbm.dao.models.entities.SaleItem;
+import com.mlatta.sbm.dao.models.entities.SalePackage;
 import com.mlatta.sbm.dao.repositories.PackageRepository;
 
 @DataJpaTest
+@Import(TestDataManager.class)
 class PackageRepositoryTest {
 
+	private static final int NUM_ITEMS = 3;
+	
 	@Autowired private PackageRepository packageRepository;
+	@Autowired private TestDataManager testDataManager;
 	
 	private SalePackage testPackage;
 	
 	@BeforeEach
 	public void setUp() {
-
-		Set<Item> testItems = TestDataUtil.getTestItems();
-		testPackage = new SalePackage("test package", 35.00, testItems);
-	
+		testPackage = new SalePackage("test package", 35.00);
+		Set<SaleItem> testItems = testDataManager.setUpTestItems(NUM_ITEMS, testPackage);
+		
+		testItems.stream().forEachOrdered(item -> testPackage.addItem(item));
+		testPackage = packageRepository.saveAndFlush(testPackage);
 	}
 	
 	@Test
 	void packageShouldbeCreatedWithMultipleItems() {
-
-		SalePackage savedPackage = packageRepository.save(testPackage);
-		
-		assertThat(savedPackage.getId(), is(notNullValue()));
-		assertThat(savedPackage.getPackageItems().size(),is(3));
+		assertThat(testPackage.getId(), is(notNullValue()));
+		assertThat(testPackage.getPackageItems().size(),is(3));
 	}
 	
 	@Test
 	void addingAnItemToThePackageShouldIncreaseTheNumberOfItemsInPackageByOne() {
 
-		Item newItem = new Item("New Addition", 15.00);
-		SalePackage salePack = packageRepository.save(testPackage);
+		SaleItem newItem = new SaleItem("New Addition", 15.00);
 		
-		salePack.addItem(newItem);
+		testPackage.addItem(newItem);
 		
-		SalePackage additionalItemPackage = packageRepository.save(salePack);
+		SalePackage additionalItemPackage = packageRepository.save(testPackage);
 		
 		assertThat(additionalItemPackage.getPackageItems().size(), is(4));
 	}
@@ -56,12 +58,11 @@ class PackageRepositoryTest {
 	@Test
 	void removingAnItemFromThePackageShouldDecreaseTheNumberOfItemsInPackageByOne() {
 
-		Item item = testPackage.getPackageItems().stream().skip(1).findFirst().orElseThrow();
-		SalePackage salePack = packageRepository.save(testPackage);
+		SaleItem item = testPackage.getPackageItems().stream().skip(1).findFirst().orElseThrow();
 		
-		salePack.removeItem(item);
+		testPackage.removeItem(item);
 		
-		SalePackage modifiedPackage = packageRepository.save(salePack);
+		SalePackage modifiedPackage = packageRepository.save(testPackage);
 		
 		assertThat(modifiedPackage.getPackageItems().size(), is(2));
 	}

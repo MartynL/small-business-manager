@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
-import com.mlatta.sbm.dao.models.Item;
+import com.mlatta.sbm.dao.models.entities.SaleItem;
 import com.mlatta.sbm.dao.repositories.ItemRepository;
 
 @DataJpaTest
@@ -23,8 +23,8 @@ class ItemRepositoryTest {
 
 	@Test
 	void shouldSaveItemSuccessfully_andReturnObjectWithHBGeneratedValues() {
-		Item item = new Item("Test item", 12.00);
-		Item savedItem = itemRepository.save(item);
+		SaleItem item = new SaleItem("Test item", 12.00);
+		SaleItem savedItem = itemRepository.save(item);
 		
 		assertThat(savedItem.getId(), notNullValue());
 		assertThat(savedItem.getCreatedDateTime(), notNullValue());
@@ -36,14 +36,14 @@ class ItemRepositoryTest {
 	
 	@Test
 	void shouldUpdateItemSuccessfully_versionShouldBeUpdated() {
-		Item item = new Item("Test item", 12.00);
-		Item savedItem = itemRepository.saveAndFlush(item);
+		SaleItem item = new SaleItem("Test item", 12.00);
+		SaleItem savedItem = itemRepository.saveAndFlush(item);
 		
 		OffsetDateTime firstUpdatedDateTime = savedItem.getUpdatedDateTime();
 		short firstVersion = savedItem.getVersion();
 		
 		savedItem.setName("Test update item");
-		Item updateItem = itemRepository.saveAndFlush(savedItem);
+		SaleItem updateItem = itemRepository.saveAndFlush(savedItem);
 		
 		assertThat(updateItem.getId(), equalTo(savedItem.getId()));
 		assertThat(updateItem.getName(), equalTo("Test update item"));
