@@ -69,14 +69,7 @@ public class TestDataManager {
 	
 	public Section createTestSection(int sectionNum) {
 		Section testSection = new Section();
-		
 		testSection.setName("Test Section " + sectionNum);
-		
-		Set<Item> items = getSectionItems(testSection);
-		
-		for (Item item : items) {
-			testSection.addItem(item);
-		}
 		
 		return testSection;
 	}

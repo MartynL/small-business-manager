@@ -28,10 +28,7 @@ public class SalePackage extends Item {
 	
 	private static final long serialVersionUID = -8176631356390440181L;
 	
-	@ManyToMany(cascade = {
-		CascadeType.PERSIST,
-		CascadeType.MERGE
-	})
+	@ManyToMany(cascade = {	CascadeType.MERGE })
 	@JoinTable(
 		name = "package_item", 
 		joinColumns = @JoinColumn(name = "package_id"), 

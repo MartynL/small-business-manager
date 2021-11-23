@@ -3,6 +3,7 @@ package com.mlatta.sbm.dao.models.embeddable;
 import java.io.Serializable;
 import java.util.Objects;
 
+import javax.persistence.Column;
 import javax.persistence.Embeddable;
 
 import lombok.AllArgsConstructor;
@@ -21,7 +22,10 @@ public class SectionItemId implements Serializable {
 
 	private static final long serialVersionUID = -2121610420547163111L;
 
+	@Column(name = "section_id")
 	private Long sectionId;
+
+	@Column(name = "item_id")
 	private Long itemId;
 	
 	@Override

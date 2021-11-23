@@ -4,8 +4,11 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import java.util.Set;
+
+import javax.transaction.Transactional;
+
 import org.hibernate.Hibernate;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,21 +35,22 @@ class SectionRepositoryTest {
 	@BeforeEach
 	void setUp() {
 		Section section = testDataManager.createTestSection(1);
-		
 		testSection = sectionRepository.saveAndFlush(section);
-		
-	}
-	
-	@AfterEach
-	void tearDown() {
-		testDataManager.clearItemRepositories();
 	}
 	
 	@Test
+	@Transactional
 	void shouldSaveSectionWithMixOfItemsAndPackages() {
 		
 		assertThat(testSection.getId(), is(notNullValue()));
-		assertThat(testSection.getItems().size(), is(TestDataManager.NUM_OF_SALE_ITEMS + TestDataManager.NUM_OF_PACKAGES));
+		
+		Set<Item> sectionItems = testDataManager.getSectionItems(testSection, TestDataManager.NUM_OF_SALE_ITEMS, TestDataManager.NUM_OF_PACKAGES);
+		
+		for (Item item : sectionItems) {
+			testSection.addItem(item);
+		}
+		
+		sectionRepository.save(testSection);
 		
 		int packageCount = 0;
 		int itemCount = 0;
@@ -62,7 +66,8 @@ class SectionRepositoryTest {
 				packageCount++;
 			}
 		}
-		
+
+		assertThat(testSection.getItems().size(), is(TestDataManager.NUM_OF_SALE_ITEMS + TestDataManager.NUM_OF_PACKAGES));
 		assertThat(packageCount, is(TestDataManager.NUM_OF_PACKAGES));
 		assertThat(itemCount, is(TestDataManager.NUM_OF_SALE_ITEMS));
 	}
@@ -76,18 +81,25 @@ class SectionRepositoryTest {
 		
 		Section updatedSection = sectionRepository.saveAndFlush(testSection);
 		
-		assertThat(updatedSection.getItems().size(), 
-				is(TestDataManager.NUM_OF_SALE_ITEMS + TestDataManager.NUM_OF_PACKAGES + 1));
+		assertThat(updatedSection.getItems().size(), is(1));
 	}
 	
 	@Test
+	@Transactional
 	void shouldUpdateSectionWithAnItemRemoved() {
+		Set<Item> sectionItems = testDataManager.getSectionItems(testSection, TestDataManager.NUM_OF_SALE_ITEMS, TestDataManager.NUM_OF_PACKAGES);
 		
-		Item itemToRemove = testSection.getItems().stream().findFirst().get().getItem();
+		for (Item item : sectionItems) {
+			testSection.addItem(item);
+		}
+		
+		sectionRepository.save(testSection);
+		
+		Item itemToRemove = testSection.getItems().get(0).getItem();
 		
 		testSection.removeItem(itemToRemove);
 		
-		Section updatedSection = sectionRepository.saveAndFlush(testSection);
+		Section updatedSection = sectionRepository.save(testSection);
 		
 		assertThat(updatedSection.getItems().size(), 
 				is((TestDataManager.NUM_OF_SALE_ITEMS + TestDataManager.NUM_OF_PACKAGES) - 1));

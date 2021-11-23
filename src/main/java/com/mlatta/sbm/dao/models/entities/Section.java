@@ -7,6 +7,9 @@ import java.util.Objects;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 import javax.persistence.Table;
@@ -32,13 +35,18 @@ public class Section extends BaseEntity {
 	@Column(name = "section_name")
 	private String name;
 	
-	@Column(name = "order_idx")
-	private int orderIdx;
 	
+	@Column(name = "list_order_idx")
+	private int listOrderIdx;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "fk_price_list")
+	private PriceList priceList; 
+
 	@OneToMany(
 			mappedBy = "section", 
 			orphanRemoval = true, 
-			cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+			cascade = CascadeType.ALL)
 	@OrderBy("orderIdx ASC")
 	private List<SectionItem> items = new ArrayList<>();
 	
@@ -65,9 +73,6 @@ public class Section extends BaseEntity {
 				if(removedRef1 && removedRef2) {
 					updateSectionItemOrderingValues(idx, items);
 					updateSectionItemOrderingValues(idx, item.getSections());
-					
-					i.setItem(null);
-					i.setSection(null);
 				}
 			});
 	}

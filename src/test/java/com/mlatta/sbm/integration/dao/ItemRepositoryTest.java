@@ -12,7 +12,9 @@ import java.time.OffsetDateTime;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.test.annotation.DirtiesContext;
 
+import com.mlatta.sbm.dao.models.entities.Item;
 import com.mlatta.sbm.dao.models.entities.SaleItem;
 import com.mlatta.sbm.dao.repositories.ItemRepository;
 
@@ -22,6 +24,7 @@ class ItemRepositoryTest {
 	@Autowired private ItemRepository itemRepository;
 
 	@Test
+	@DirtiesContext
 	void shouldSaveItemSuccessfully_andReturnObjectWithHBGeneratedValues() {
 		SaleItem item = new SaleItem("Test item", 12.00);
 		SaleItem savedItem = itemRepository.save(item);
@@ -35,19 +38,20 @@ class ItemRepositoryTest {
 	}
 	
 	@Test
+	@DirtiesContext
 	void shouldUpdateItemSuccessfully_versionShouldBeUpdated() {
-		SaleItem item = new SaleItem("Test item", 12.00);
-		SaleItem savedItem = itemRepository.saveAndFlush(item);
 		
-		OffsetDateTime firstUpdatedDateTime = savedItem.getUpdatedDateTime();
-		short firstVersion = savedItem.getVersion();
+		Item item = (SaleItem) itemRepository.findById(10001L).get();
 		
-		savedItem.setName("Test update item");
-		SaleItem updateItem = itemRepository.saveAndFlush(savedItem);
+		OffsetDateTime firstUpdatedDateTime = item.getUpdatedDateTime();
+		short firstVersion = item.getVersion();
 		
-		assertThat(updateItem.getId(), equalTo(savedItem.getId()));
+		item.setName("Test update item");
+		Item updateItem = itemRepository.saveAndFlush(item);
+		
+		assertThat(updateItem.getId(), equalTo(item.getId()));
 		assertThat(updateItem.getName(), equalTo("Test update item"));
-		assertThat(updateItem.getCreatedDateTime(), equalTo(savedItem.getCreatedDateTime()));
+		assertThat(updateItem.getCreatedDateTime(), equalTo(item.getCreatedDateTime()));
 		assertThat(updateItem.getUpdatedDateTime(), is(not(updateItem.getCreatedDateTime())));
 		assertThat(updateItem.getUpdatedDateTime(), is(not(firstUpdatedDateTime)));
 		assertThat(updateItem.getVersion(), is(not(firstVersion)));

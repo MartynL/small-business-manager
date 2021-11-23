@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 
@@ -31,10 +31,9 @@ public class PriceList extends BaseEntity {
 	@Column(name = "list_name")
 	private String name;
 
-	@OneToMany(
-	        cascade = CascadeType.ALL,
-	        orphanRemoval = true)
-	@OrderBy("orderIdx ASC")
+	@OneToMany
+	@OrderBy("listOrderIdx ASC")
+	@JoinColumn(name = "fk_price_list")
 	private List<Section> sections = new ArrayList<>();
 
 	public PriceList(String name) {
@@ -43,7 +42,8 @@ public class PriceList extends BaseEntity {
 	
 	public void addSection(Section section) {
 		int nextIdx = this.sections.isEmpty() ? 0 : this.sections.size();
-		section.setOrderIdx(nextIdx);
+		section.setListOrderIdx(nextIdx);
+		section.setPriceList(this);
         sections.add(section);
     }
 	
@@ -53,7 +53,7 @@ public class PriceList extends BaseEntity {
 			.filter(s -> s.getUniqueRef().equals(section.getUniqueRef()))
 			.findFirst()
 			.ifPresent(s -> {
-				int idx = s.getOrderIdx();
+				int idx = s.getListOrderIdx();
 
 				boolean removed = this.sections.remove(s);
 				
@@ -65,8 +65,8 @@ public class PriceList extends BaseEntity {
 
 	private void updateSectionOrderingValues(int idx) {
 		this.sections.forEach(remainingItem -> {
-			if(remainingItem.getOrderIdx() > idx) {
-				remainingItem.setOrderIdx(remainingItem.getOrderIdx() - 1);
+			if(remainingItem.getListOrderIdx() > idx) {
+				remainingItem.setListOrderIdx(remainingItem.getListOrderIdx() - 1);
 			}
 		});
 	}

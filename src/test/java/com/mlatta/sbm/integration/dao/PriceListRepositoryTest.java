@@ -3,8 +3,8 @@ package com.mlatta.sbm.integration.dao;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
+import javax.transaction.Transactional;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -24,22 +24,12 @@ class PriceListRepositoryTest {
 	@Autowired private TestDataManager testDataManager;
 	@Autowired private PriceListRepository priceListRepository;
 	
-	private PriceList testList;
-	
-	@BeforeEach
-	public void setUp() {
-		testList = testDataManager.createPriceListWithMultipleSections(NUM_OF_SECTIONS);
-	}
-	
-	@AfterEach
-	public void tearDown() {
-		testDataManager.clearItemRepositories();
-	}
-	
 	@Test
-	void shouldSavePriceListWithMultipleSections() {
+	@Transactional
+	void shouldSavePriceListWithMultipleEmptySections() {
 		
-		PriceList list = priceListRepository.saveAndFlush(testList);
+		PriceList testList = testDataManager.createPriceListWithMultipleSections(NUM_OF_SECTIONS);
+		PriceList list = priceListRepository.save(testList );
 		
 		assertThat(list.getName(), is(testList.getName()));
 		assertThat(list.getUniqueRef(), is(testList.getUniqueRef()));
@@ -48,21 +38,21 @@ class PriceListRepositoryTest {
 	@Test
 	void shouldAddAnAdditionalSectionToListOfSectionsWithCorrectOrderIdx() {
 		
-		priceListRepository.saveAndFlush(testList);
-		
 		Section newSection = testDataManager.createTestSection(1);
-		PriceList list = priceListRepository.findByUniqueRef(testList.getUniqueRef());
+		PriceList list = priceListRepository.findAll().get(0);
+		
+		int initialNumOfSections = list.getSections().size();
 		
 		list.addSection(newSection);
 		
 		assertThat(list.getSections().contains(newSection), is(true));
-		assertThat(list.getSections().size(), is(NUM_OF_SECTIONS + 1));
+		assertThat(list.getSections().size(), is(initialNumOfSections + 1));
 		
 		boolean sectionFoundInSectionsSetWithCorrectIdx = false;
 		
 		for (Section section : list.getSections()) {
 			if(section.getUniqueRef().equals(newSection.getUniqueRef()) 
-					&& section.getOrderIdx() == (list.getSections().size() - 1)) {
+					&& section.getListOrderIdx() == (list.getSections().size() - 1)) {
 				sectionFoundInSectionsSetWithCorrectIdx = true;
 			}
 		}
@@ -73,20 +63,19 @@ class PriceListRepositoryTest {
 	@Test
 	void shouldRemoveSectionAndReOrderRemainingSections() {
 		
-		priceListRepository.saveAndFlush(testList);
+		PriceList list = priceListRepository.findAll().get(0);
+		Section sectionToDelete = list.getSections().stream().findFirst().get();
+		int initialNumOfSections = list.getSections().size();
 		
-		Section sectionToDelete = testList.getSections().stream().findFirst().get();
-		
-		PriceList list = priceListRepository.findByUniqueRef(testList.getUniqueRef());
 		list.removeSection(sectionToDelete);
 		
 		assertThat(list.getSections().contains(sectionToDelete), is(false));
-		assertThat(list.getSections().size(), is(NUM_OF_SECTIONS - 1));
+		assertThat(list.getSections().size(), is(initialNumOfSections - 1));
 		
 		int testIdx = 0;
 		
 		for (Section s : list.getSections()) {
-			assertThat(s.getOrderIdx(), is(testIdx));
+			assertThat(s.getListOrderIdx(), is(testIdx));
 			testIdx++;
 		}
 	}
